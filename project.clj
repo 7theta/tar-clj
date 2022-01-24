@@ -11,7 +11,9 @@
   :url "https://github.com/7theta/tar-clj"
   :license {:name "MIT License"
             :url "https://opensource.org/licenses/MIT"}
-  :dependencies [[org.clojure/clojure "1.10.3"]]
+  :dependencies [[org.clojure/clojure "1.10.3"]
+                 [com.7theta/utilis "1.13.0"]
+                 [org.apache.commons/commons-compress "1.21"]]
   :profiles {:dev {:dependencies []
                    :source-paths ["dev"]}}
   :scm {:name "git"
