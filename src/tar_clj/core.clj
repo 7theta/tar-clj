@@ -22,6 +22,8 @@
 
 (def ^:private compression-method "gz")
 
+(declare ->filename)
+
 (defn archive
   [files & {:keys [directory]}]
   (let [directory (when directory (io/file directory))]
@@ -45,10 +47,6 @@
 (defn archive->bytes
   [^ByteArrayOutputStream archive]
   (.toByteArray archive))
-
-(defn- ->filename
-  [archive-name]
-  (str archive-name ".tar." compression-method))
 
 (defn archive->file
   [^ByteArrayOutputStream archive name]
@@ -93,3 +91,9 @@
                                  :last-modified (.getLastModifiedDate entry)}))
         {:count count
          :entries entry-info}))))
+
+;;; Implementation
+
+(defn- ->filename
+  [archive-name]
+  (str archive-name ".tar." compression-method))
