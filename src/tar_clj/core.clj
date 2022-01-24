@@ -28,10 +28,14 @@
   [files & {:keys [directory]}]
   (let [directory (when directory (io/file directory))]
     (with-open [out-stream (ByteArrayOutputStream.)
-                compressor-stream (doto (CompressorStreamFactory.)
-                                    (.createCompressorOutputStream compression-method out-stream))
-                ^TarArchiveOutputStream tar-stream (doto (ArchiveStreamFactory.)
-                                                     (.createArchiveOutputStream ArchiveStreamFactory/TAR compressor-stream))]
+                compressor-stream (.createCompressorOutputStream
+                                   (CompressorStreamFactory.)
+                                   compression-method
+                                   out-stream)
+                ^TarArchiveOutputStream tar-stream (.createArchiveOutputStream
+                                                    (ArchiveStreamFactory.)
+                                                    ArchiveStreamFactory/TAR
+                                                    compressor-stream)]
       (doseq [file files]
         (let [file (io/file file)
               name (.getPath ^URI (if directory
@@ -42,6 +46,7 @@
           (io/copy (io/input-stream file) tar-stream)
           (.closeArchiveEntry tar-stream)))
       (.finish tar-stream)
+      (.close tar-stream)
       out-stream)))
 
 (defn archive->bytes
@@ -60,10 +65,14 @@
   (let [dest-dir (io/file dest-dir)]
     (fs/mkdir dest-dir :recursive true)
     (with-open [in-stream (-> archive .toByteArray ByteArrayInputStream.)
-                compressor-stream (doto (CompressorStreamFactory.)
-                                    (.createCompressorInputStream compression-method in-stream))
-                ^TarArchiveInputStream tar-stream (doto (ArchiveStreamFactory.)
-                                                    (.createArchiveInputStream ArchiveStreamFactory/TAR compressor-stream))]
+                compressor-stream (.createCompressorInputStream
+                                   (CompressorStreamFactory.)
+                                   compression-method
+                                   in-stream)
+                ^TarArchiveInputStream tar-stream (.createArchiveInputStream
+                                                   (ArchiveStreamFactory.)
+                                                   ArchiveStreamFactory/TAR
+                                                   compressor-stream)]
       (loop [count 0]
         (if-let [^TarArchiveEntry entry (.getNextEntry tar-stream)]
           (let [file (io/file (str dest-dir File/separatorChar (.getName entry)))]
@@ -78,10 +87,14 @@
 (defn list
   [^ByteArrayOutputStream archive]
   (with-open [in-stream (-> archive .toByteArray ByteArrayInputStream.)
-              compressor-stream (doto (CompressorStreamFactory.)
-                                  (.createCompressorInputStream compression-method in-stream))
-              ^TarArchiveInputStream tar-stream (doto (ArchiveStreamFactory.)
-                                                  (.createArchiveInputStream ArchiveStreamFactory/TAR compressor-stream))]
+              compressor-stream (.createCompressorInputStream
+                                 (CompressorStreamFactory.)
+                                 compression-method
+                                 in-stream)
+              ^TarArchiveInputStream tar-stream (.createArchiveInputStream
+                                                 (ArchiveStreamFactory.)
+                                                 ArchiveStreamFactory/TAR
+                                                 compressor-stream)]
     (loop [count 0
            entry-info []]
       (if-let [^TarArchiveEntry entry (.getNextEntry tar-stream)]
