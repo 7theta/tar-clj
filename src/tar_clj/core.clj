@@ -66,15 +66,14 @@
                                     (.createCompressorInputStream compression-method in-stream))
                 ^TarArchiveInputStream tar-stream (doto (ArchiveStreamFactory.)
                                                     (.createArchiveInputStream ArchiveStreamFactory/TAR compressor-stream))]
-      (loop [^TarArchiveEntry entry (.getNextEntry tar-stream)
-             count 0]
-        (if entry
+      (loop [count 0]
+        (if-let [^TarArchiveEntry entry (.getNextEntry tar-stream)]
           (let [file (io/file (str dest-dir File/separatorChar (.getName entry)))]
             (if (.isDirectory entry)
               (when-not (.exists file)
                 (fs/mkdir file :recursive true))
-              (io/copy tar-stream file :buffer-size 8192))
-            (recur (.getNextEntry tar-stream) (inc count)))
+              (io/copy tar-stream file))
+            (recur (inc count)))
           {:count count
            :dest-dir dest-dir})))))
 
